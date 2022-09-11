@@ -1,8 +1,5 @@
 package com.csc340.RestAPI;
 
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -18,62 +15,56 @@ import org.springframework.web.client.RestTemplate;
 @RestController
 public class RestApiController {
 
-    @GetMapping("/hello")
-    public String hello(@RequestParam(value = "name", defaultValue = "World") String name) {
-        return String.format("Hello, %s!", name);
-    }
-
     /**
-     * Get a random quote from quotable and make it available at this endpoint.
-     *
-     * @return
+     * Get a random joke and print it to the console
+     * 
+     * @return random joke
      */
-    @GetMapping("/quote")
-    public Object getQuote() {
-        String url = "https://api.quotable.io/random";
+    @GetMapping("/joke")
+    public Object getJoke(){
+        String url = "https://geek-jokes.sameerkumar.website/api?format=json";
         RestTemplate restTemplate = new RestTemplate();
-        Object jSonQuote = restTemplate.getForObject(url, Object.class);
-
-        //Print the whole response to console.
-        String quote = restTemplate.getForObject(url, String.class);
-        //Parse out the most important info from the response.
-        JSONObject jo = new JSONObject(quote);
+        Object jSonJoke = restTemplate.getForObject(url, Object.class);
+        
+        String joke = restTemplate.getForObject(url, String.class);
+        
+        JSONObject jo = new JSONObject(joke);
         System.out.println(jo.toString());
-        String quoteAuthor = jo.getString("author");
-        String quoteContent = jo.getString("content");
-        System.out.println(quoteAuthor);
-        System.out.println(quoteContent);
-
-        return jSonQuote;
+        String JSONjoke = jo.getString("joke");
+        System.out.println("Joke: " + JSONjoke);
+        
+        return jSonJoke;
     }
-
+    
     /**
-     * Get a list of universities from hipolabs and parse the most important
-     * info to console.
-     *
-     * @return
+     * Fetches data from API, sorts through nested JSON, and prints out the 
+     * nation and population for the 2020 year.
+     * 
+     * @return Population of US from the latest year
      */
-    @GetMapping("/universities")
-    public List<Object> getUniversities() {
-        String url = "http://universities.hipolabs.com/search?name=sports";
+    @GetMapping("/population")
+    public Object getPop(){
+        String url = "https://datausa.io/api/data?drilldowns=Nation&measures=Population&year=latest";
         RestTemplate restTemplate = new RestTemplate();
-        Object[] universities = restTemplate.getForObject(url, Object[].class);
+        Object jSonPopulation = restTemplate.getForObject(url, Object.class);
+        
+        //console 
+        String population = restTemplate.getForObject(url, String.class);
+        
+        //parse
+        JSONObject jo = new JSONObject(population.toString());
+        JSONArray result = jo.getJSONArray("data");
+        JSONObject result1 = result.getJSONObject(0);
+        
+        String popNation = result1.getString("Nation");
+        int popNum = result1.getInt("Population");
+        
+        //print 2020's population for US
+        System.out.println(popNation + " : " + popNum);
 
-        //Print the whole response to console
-        JSONArray ja = new JSONArray(universities);
-        System.out.println(ja.toString());
-
-        //Parse out relevant info from each entry in the response
-        Iterator<Object> iter = ja.iterator();
-        while (iter.hasNext()) {
-            JSONObject jo = (JSONObject) iter.next();
-            String name = jo.getString("name");
-            String country = jo.getString("country");
-            System.out.println(name + " : " + country);
-
-        }
-
-        return Arrays.asList(universities);
+        
+        return jSonPopulation;
     }
+    
 
 }
